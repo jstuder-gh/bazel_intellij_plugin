@@ -44,7 +44,7 @@ public interface JavaClasspathAspectStrategy {
 
   boolean isApplicable(BlazeVersionData versionData);
 
-  ImmutableList<String> getBuildFlags();
+  ImmutableList<String> getBuildFlags(BlazeVersionData versionData);
 
   /** A strategy for attaching the java_classpath aspect during a bazel build invocation. */
   class BazelStrategy implements JavaClasspathAspectStrategy {
@@ -56,9 +56,11 @@ public interface JavaClasspathAspectStrategy {
     }
 
     @Override
-    public ImmutableList<String> getBuildFlags() {
+    public ImmutableList<String> getBuildFlags(BlazeVersionData versionData) {
       return ImmutableList.of(
-          "--aspects=@intellij_aspect//:java_classpath.bzl%java_classpath_aspect",
+          versionData.bazelIsAtLeastVersion(6, 0, 0)
+                  ? "--aspects=@@intellij_aspect//:java_classpath.bzl%java_classpath_aspect"
+                  : "--aspects=@intellij_aspect//:java_classpath.bzl%java_classpath_aspect",
           getAspectRepositoryOverrideFlag(), "--output_groups=" + OUTPUT_GROUP);
     }
 
